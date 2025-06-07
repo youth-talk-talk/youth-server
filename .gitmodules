@@ -1,3 +1,3 @@
-[submodule "BE-submodule-data"]
-	path = BE-submodule-data
-	url = https://github.com/youth-talk-talk/BE-submodule-data.git
+[submodule "youth-server-data"]
+    path = youth-server-data
+    url  = git@github.com:youth-talk-talk/youth-server-data.git

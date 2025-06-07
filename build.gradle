@@ -99,7 +99,7 @@ tasks.named('test') {
 }
 
 tasks.register('copyYamlFiles', Copy) {
-	from './BE-submodule-data'
+	from './youth-server-data'
 	include '**/*'
 	into 'src/main/resources'
 }
