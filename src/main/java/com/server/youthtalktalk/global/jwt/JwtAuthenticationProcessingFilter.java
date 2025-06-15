@@ -43,8 +43,10 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * 유효하지 않은 refresh token -> 인증 실패 (401)
      */
 
-    private final List<String> NO_CHECK_URL =
-            Arrays.asList(LOGIN_URL, SIGNUP_URL, ADMIN_LOGIN_URL, STATIC_RESOURCE);
+    private final List<String> NO_CHECK_URL = Arrays.asList(
+            LOGIN_URL, SIGNUP_URL, ADMIN_LOGIN_URL, STATIC_RESOURCE, HEALTH_CHECK_URL
+    );
+
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
@@ -52,15 +54,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, InvalidTokenException {
-        for (String path : NO_CHECK_URL) {
-            if (antPathMatcher.match(path, request.getRequestURI())) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-        }
 
-        if(request.getRequestURI().equals(HEALTH_CHECK_URL)) {
-            authenticationForHealthCheck(request);
+        if (NO_CHECK_URL.stream().anyMatch(p -> antPathMatcher.match(p, request.getRequestURI()))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -169,15 +164,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                         authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private void authenticationForHealthCheck(HttpServletRequest request){
-        String username = request.getHeader("username");
-
-        Member member = memberRepository.findByUsername(username).get();
-        if(member.getRole().equals(Role.ADMIN)){
-            saveAuthentication(member);
-        }
     }
 
     // 요청의 refresh token이 db에 저장된 refresh token과 일치하는지 검사
