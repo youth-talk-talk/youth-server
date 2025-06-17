@@ -7,7 +7,7 @@ IMAGE_VERSION="${IMAGE_VERSION}"
 DEPLOY_PATH="${DEPLOY_PATH}"
 APP_USERNAME="${APP_USERNAME}"
 APP_PASSWORD="${APP_PASSWORD}"
-
+SPRING_PROFILE="${SPRING_PROFILE}"
 
 # 현재 실행 중인 컨테이너 확인
 CURRENT_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E 'blue|green')
@@ -34,7 +34,12 @@ echo "Old port: $OLD_PORT"
 
 # 새로운 컨테이너 실행
 echo "Running new container: $NEW_CONTAINER"
-docker run -d --name $NEW_CONTAINER -e PROFILE=$NEW_CONTAINER -e PORT=8080 -p $NEW_PORT:8080 $IMAGE_NAME:$IMAGE_VERSION || { echo "Docker run failed"; exit 1; }
+docker run -d --name $NEW_CONTAINER \
+  -e PROFILE=$NEW_CONTAINER \
+  -e SPRING_PROFILES_ACTIVE=$NEW_CONTAINER,$SPRING_PROFILE \
+  -e PORT=8080 \
+  -p $NEW_PORT:8080 \
+  $IMAGE_NAME:$IMAGE_VERSION || { echo "Docker run failed"; exit 1; }
 
 # 새로운 서버의 헬스 체크
 echo "Waiting for new server to be up..."
